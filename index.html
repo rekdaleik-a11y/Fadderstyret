@@ -1,0 +1,1984 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fadderplan OsloMet</title>
+  <style>
+    :root {
+      --bg: #f3f5fb;
+      --panel: rgba(255, 255, 255, 0.86);
+      --panel-strong: #ffffff;
+      --text: #10203f;
+      --muted: #5b6780;
+      --line: rgba(16, 32, 63, 0.12);
+      --blue: #0a2d6e;
+      --red: #e63328;
+      --green: #21895b;
+      --gold: #c89a1e;
+      --teal: #237a8e;
+      --purple: #7d4ac7;
+      --shadow: 0 20px 50px rgba(10, 45, 110, 0.14);
+      --radius-xl: 28px;
+      --radius-lg: 20px;
+      --radius-md: 14px;
+      --slot-dag: linear-gradient(135deg, rgba(10, 45, 110, 0.12), rgba(35, 122, 142, 0.14));
+      --slot-kveld: linear-gradient(135deg, rgba(230, 51, 40, 0.12), rgba(200, 154, 30, 0.18));
+      --slot-festival: linear-gradient(135deg, rgba(200, 154, 30, 0.16), rgba(230, 51, 40, 0.12));
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Avenir Next", "Segoe UI", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(230, 51, 40, 0.12), transparent 24%),
+        radial-gradient(circle at top right, rgba(10, 45, 110, 0.14), transparent 26%),
+        linear-gradient(180deg, #f8f9fd 0%, #eef2fa 52%, #f7f6f2 100%);
+      min-height: 100vh;
+    }
+
+    body.drawer-open {
+      overflow: hidden;
+    }
+
+    .shell {
+      width: min(1240px, calc(100vw - 140px));
+      margin: 0 auto;
+      padding: 44px 0 96px;
+    }
+
+    .topbar {
+      position: relative;
+      margin-bottom: 10px;
+    }
+
+    .topbar-inner {
+      width: min(1240px, calc(100vw - 140px));
+      margin: 0 auto;
+      padding: 40px 0 0;
+      display: grid;
+      gap: 28px;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.5fr) minmax(320px, 0.95fr);
+      gap: 26px;
+    }
+
+    .hero-card,
+    .stats-card {
+      background: rgba(255, 255, 255, 0.78);
+      border: 1px solid rgba(255, 255, 255, 0.82);
+      box-shadow: 0 22px 48px rgba(10, 45, 110, 0.1);
+      border-radius: var(--radius-xl);
+      padding: 22px;
+    }
+
+    .hero-card {
+      background:
+        linear-gradient(135deg, rgba(255, 255, 255, 0.94), rgba(250, 242, 227, 0.9)),
+        radial-gradient(circle at right top, rgba(230, 51, 40, 0.12), transparent 28%);
+    }
+
+    .stats-card {
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(245, 248, 255, 0.92));
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border-radius: 999px;
+      padding: 6px 12px;
+      background: rgba(10, 45, 110, 0.08);
+      color: var(--blue);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      font-size: clamp(2.2rem, 5vw, 3.8rem);
+      line-height: 0.95;
+      margin: 16px 0 12px;
+      letter-spacing: -0.04em;
+      max-width: 10ch;
+    }
+
+    .hero p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 1rem;
+      line-height: 1.65;
+      max-width: 62ch;
+    }
+
+    .hero-actions,
+    .toolbar,
+    .toolbar-row,
+    .filter-row,
+    .card-meta,
+    .card-chips,
+    .slot-header,
+    .slot-actions,
+    .summary-grid,
+    .section-head,
+    .drawer-actions,
+    .grid-mini,
+    .todo-row,
+    .empty-card,
+    .weather-box {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    button,
+    select,
+    input,
+    textarea {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+      border: 0;
+      transition: transform 180ms ease, box-shadow 180ms ease, background 180ms ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+    }
+
+    .primary-btn,
+    .ghost-btn,
+    .chip-btn,
+    .icon-btn {
+      border-radius: 999px;
+      padding: 12px 16px;
+      font-weight: 700;
+    }
+
+    .primary-btn {
+      color: #fff;
+      background: linear-gradient(135deg, var(--blue), #224f9f);
+      box-shadow: 0 14px 24px rgba(10, 45, 110, 0.24);
+    }
+
+    .ghost-btn,
+    .chip-btn,
+    .icon-btn {
+      background: rgba(255, 255, 255, 0.9);
+      color: var(--text);
+      border: 1px solid var(--line);
+    }
+
+    .chip-btn.active {
+      color: #fff;
+      border-color: transparent;
+      background: linear-gradient(135deg, var(--blue), var(--teal));
+      box-shadow: 0 12px 20px rgba(35, 122, 142, 0.2);
+    }
+
+    .ghost-btn.danger {
+      color: #a6241c;
+    }
+
+    .icon-btn {
+      padding-inline: 13px;
+      min-width: 42px;
+    }
+
+    .stats-card {
+      display: grid;
+      gap: 18px;
+      align-content: start;
+    }
+
+    .summary-grid {
+      gap: 14px;
+      align-items: stretch;
+    }
+
+    .stat {
+      flex: 1 1 140px;
+      min-width: 140px;
+      padding: 14px 16px;
+      border-radius: 18px;
+      background: rgba(10, 45, 110, 0.05);
+    }
+
+    .stat strong {
+      display: block;
+      font-size: 1.8rem;
+      line-height: 1;
+      margin-bottom: 8px;
+      letter-spacing: -0.05em;
+    }
+
+    .stat span {
+      font-size: 0.92rem;
+      color: var(--muted);
+    }
+
+    .toolbar {
+      position: sticky;
+      top: 12px;
+      z-index: 18;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+      padding: 18px 22px;
+      border-radius: var(--radius-xl);
+      background: rgba(255, 255, 255, 0.82);
+      backdrop-filter: blur(18px);
+      box-shadow: 0 18px 40px rgba(16, 32, 63, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.76);
+    }
+
+    .toolbar-row {
+      flex: 1 1 420px;
+    }
+
+    .toolbar label,
+    .field label,
+    .todo-section h4 {
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .toolbar select,
+    .toolbar input,
+    .field input,
+    .field select,
+    .field textarea {
+      width: 100%;
+      border-radius: 14px;
+      border: 1px solid rgba(16, 32, 63, 0.14);
+      background: rgba(255, 255, 255, 0.98);
+      padding: 13px 14px;
+      color: var(--text);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4);
+    }
+
+    .field textarea {
+      min-height: 96px;
+      resize: vertical;
+    }
+
+    .filter-card {
+      margin-top: 28px;
+      padding: 22px 24px;
+      border-radius: var(--radius-xl);
+      background: rgba(255, 255, 255, 0.68);
+      border: 1px solid rgba(255, 255, 255, 0.72);
+      box-shadow: 0 14px 34px rgba(16, 32, 63, 0.08);
+    }
+
+    .legend-card {
+      display: none;
+    }
+
+    .section-head {
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .section-head h2,
+    .section-head h3,
+    .drawer-title h2 {
+      margin: 0;
+      font-size: 1.1rem;
+      letter-spacing: -0.03em;
+    }
+
+    .section-head p,
+    .legend-card p,
+    .empty-card span,
+    .drawer-title p,
+    .field small,
+    .todo-empty {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    .group-pill,
+    .slot-badge,
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-weight: 700;
+      font-size: 0.82rem;
+      background: rgba(16, 32, 63, 0.06);
+      color: var(--text);
+    }
+
+    .group-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      background: currentColor;
+      display: inline-block;
+    }
+
+    .board {
+      margin-top: 36px;
+      display: grid;
+      gap: 28px;
+    }
+
+    .calendar-anchor {
+      scroll-margin-top: 110px;
+    }
+
+    .intro-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 18px;
+      margin-top: 18px;
+    }
+
+    .guide-card {
+      padding: 20px;
+      border-radius: var(--radius-xl);
+      background: rgba(255, 255, 255, 0.76);
+      border: 1px solid rgba(255, 255, 255, 0.82);
+      box-shadow: 0 16px 36px rgba(16, 32, 63, 0.08);
+    }
+
+    .guide-steps {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    .guide-step {
+      padding: 14px;
+      border-radius: 18px;
+      background: rgba(10, 45, 110, 0.05);
+      border: 1px solid rgba(16, 32, 63, 0.08);
+    }
+
+    .guide-step strong {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 0.98rem;
+    }
+
+    .day-card {
+      border-radius: 30px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.7);
+      background: rgba(255, 255, 255, 0.7);
+      box-shadow: var(--shadow);
+    }
+
+    .day-head {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 14px;
+      padding: 26px 28px 22px;
+      background:
+        linear-gradient(135deg, rgba(10, 45, 110, 0.95), rgba(31, 80, 146, 0.88)),
+        linear-gradient(120deg, rgba(255, 255, 255, 0.1), transparent 48%);
+      color: #fff;
+    }
+
+    .day-head h2 {
+      margin: 0;
+      font-size: clamp(1.35rem, 2vw, 1.7rem);
+      letter-spacing: -0.04em;
+    }
+
+    .day-head p {
+      margin: 4px 0 0;
+      opacity: 0.85;
+    }
+
+    .day-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+      padding: 22px 24px 26px;
+    }
+
+    .slot {
+      min-height: 0;
+      border-radius: 24px;
+      padding: 16px;
+      border: 1px solid rgba(16, 32, 63, 0.09);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      background: #fff;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .slot::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      opacity: 1;
+      pointer-events: none;
+    }
+
+    .slot[data-slot-type="dag"]::before {
+      background: var(--slot-dag);
+    }
+
+    .slot[data-slot-type="kveld"]::before {
+      background: var(--slot-kveld);
+    }
+
+    .slot[data-slot-type="festival"]::before {
+      background: var(--slot-festival);
+    }
+
+    .slot > * {
+      position: relative;
+      z-index: 1;
+    }
+
+    .slot-header {
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .slot-header h3 {
+      margin: 0 0 4px;
+      font-size: 1rem;
+      letter-spacing: -0.02em;
+    }
+
+    .slot-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .event-card {
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.95);
+      border: 1px solid rgba(16, 32, 63, 0.08);
+      box-shadow: 0 12px 28px rgba(16, 32, 63, 0.08);
+      padding: 14px 14px 14px 18px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .event-card::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 6px;
+      background: var(--accent, var(--blue));
+    }
+
+    .event-card h4 {
+      margin: 0 0 6px;
+      font-size: 1rem;
+      letter-spacing: -0.02em;
+    }
+
+    .event-card p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.55;
+      font-size: 0.95rem;
+    }
+
+    .card-meta {
+      margin-top: 10px;
+      font-size: 0.84rem;
+      color: var(--muted);
+    }
+
+    .card-chips {
+      margin-top: 12px;
+      gap: 8px;
+    }
+
+    .group-pill {
+      background: rgba(16, 32, 63, 0.06);
+      font-weight: 700;
+      padding: 7px 10px;
+    }
+
+    .event-card .action-row {
+      margin-top: 12px;
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .mini-link {
+      border: 0;
+      background: none;
+      color: var(--blue);
+      font-weight: 700;
+      padding: 0;
+    }
+
+    .empty-card {
+      min-height: 104px;
+      justify-content: center;
+      align-items: flex-start;
+      flex-direction: column;
+      border: 1px dashed rgba(16, 32, 63, 0.18);
+      border-radius: 18px;
+      padding: 18px;
+      background: rgba(255, 255, 255, 0.6);
+    }
+
+    .empty-card strong {
+      font-size: 0.95rem;
+    }
+
+    .drawer-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(6, 12, 28, 0.38);
+      z-index: 30;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 220ms ease;
+    }
+
+    .drawer {
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: min(560px, 100vw);
+      height: 100vh;
+      background: #fcfdff;
+      box-shadow: -24px 0 60px rgba(8, 18, 44, 0.2);
+      z-index: 31;
+      transform: translateX(104%);
+      transition: transform 260ms ease;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .drawer-backdrop.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .drawer.open {
+      transform: translateX(0);
+    }
+
+    .drawer-head,
+    .drawer-body,
+    .drawer-foot {
+      padding-inline: 22px;
+    }
+
+    .drawer-head {
+      padding-top: 18px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid rgba(16, 32, 63, 0.08);
+      display: grid;
+      gap: 14px;
+    }
+
+    .drawer-body {
+      padding-top: 16px;
+      padding-bottom: 24px;
+      overflow: auto;
+      display: grid;
+      gap: 18px;
+      align-content: start;
+    }
+
+    .drawer-foot {
+      padding-top: 14px;
+      padding-bottom: 18px;
+      border-top: 1px solid rgba(16, 32, 63, 0.08);
+      background: rgba(255, 255, 255, 0.96);
+    }
+
+    .drawer-actions {
+      justify-content: space-between;
+    }
+
+    .field-grid,
+    .grid-mini {
+      display: grid;
+      gap: 14px;
+    }
+
+    .field-grid.two,
+    .grid-mini.two {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .field-grid.three {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .check-grid {
+      display: grid;
+      gap: 10px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .check-tile {
+      border-radius: 16px;
+      border: 1px solid rgba(16, 32, 63, 0.1);
+      padding: 12px 14px;
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      background: rgba(255, 255, 255, 0.92);
+    }
+
+    .check-tile input {
+      width: 18px;
+      height: 18px;
+      margin-top: 2px;
+    }
+
+    .todo-section,
+    .info-panel {
+      padding: 16px;
+      border-radius: 20px;
+      background: rgba(10, 45, 110, 0.04);
+      border: 1px solid rgba(16, 32, 63, 0.08);
+    }
+
+    .progress-wrap {
+      height: 10px;
+      width: 100%;
+      border-radius: 999px;
+      background: rgba(16, 32, 63, 0.08);
+      overflow: hidden;
+      margin-top: 10px;
+    }
+
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      border-radius: inherit;
+      background: linear-gradient(135deg, var(--green), #37b77b);
+      transition: width 220ms ease;
+    }
+
+    .todo-list {
+      display: grid;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .todo-row {
+      flex-wrap: nowrap;
+      align-items: stretch;
+    }
+
+    .todo-row input[type="text"] {
+      flex: 1 1 auto;
+    }
+
+    .todo-check {
+      width: 18px;
+      height: 18px;
+      margin-top: 12px;
+    }
+
+    .weather-box {
+      justify-content: space-between;
+      padding: 12px 14px;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.9);
+      border: 1px solid rgba(16, 32, 63, 0.08);
+    }
+
+    .weather-box strong {
+      font-size: 1.3rem;
+      letter-spacing: -0.03em;
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      border: 0;
+    }
+
+    @media (max-width: 1180px) {
+      .hero,
+      .intro-grid,
+      .day-grid,
+      .field-grid.two,
+      .field-grid.three,
+      .grid-mini.two,
+      .check-grid,
+      .guide-steps {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 760px) {
+      .shell,
+      .topbar-inner {
+        width: min(100vw - 32px, 100%);
+      }
+
+      .hero-card,
+      .stats-card,
+      .toolbar,
+      .filter-card,
+      .legend-card,
+      .day-head,
+      .day-grid {
+        padding-left: 16px;
+        padding-right: 16px;
+      }
+
+      .day-head {
+        grid-template-columns: 1fr;
+      }
+
+      .drawer-head,
+      .drawer-body,
+      .drawer-foot {
+        padding-inline: 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="topbar-inner">
+      <section class="hero">
+        <div class="hero-card">
+          <span class="eyebrow">Fadderuka 2026 • OsloMet</span>
+          <h1>Felles arbeidsplan for hele fadderuka</h1>
+          <p>
+            Dette er planverktøyet for styrene i Design Master, Produktdesign Bachelor og Kjeller. Her kan dere
+            se hele uka samlet, filtrere på hvem som er med, legge inn nye arrangementer og fylle ut alt det praktiske
+            rundt hvert opplegg.
+          </p>
+          <div class="hero-actions" style="margin-top:18px;">
+            <button class="primary-btn" id="add-first-event">+ Nytt arrangement</button>
+            <button class="ghost-btn" id="jump-to-calendar">Se kalender</button>
+            <button class="ghost-btn" id="export-data">Eksporter JSON</button>
+            <button class="ghost-btn" id="import-data-btn">Importer JSON</button>
+            <input class="sr-only" type="file" id="import-data-input" accept="application/json" />
+          </div>
+        </div>
+
+        <aside class="stats-card">
+          <div class="section-head">
+            <div>
+              <h2>Live oversikt</h2>
+              <p>Alt under oppdateres automatisk når dere redigerer eller filtrerer.</p>
+            </div>
+          </div>
+          <div class="summary-grid" id="summary-grid"></div>
+          <div class="info-panel">
+            <strong id="sync-status-title">Lagring</strong>
+            <p class="muted" id="sync-status-text" style="margin-top:6px;">Lokal modus. Legg inn Supabase-oppsett for delt redigering.</p>
+          </div>
+        </aside>
+      </section>
+
+      <section class="toolbar">
+        <div class="toolbar-row">
+          <label for="jump-to-day">Hopp til dag</label>
+          <select id="jump-to-day"></select>
+        </div>
+        <div class="toolbar-row">
+          <label for="search-events">Søk i arrangementer</label>
+          <input id="search-events" type="search" placeholder="Søk på navn, sted, ansvarlig eller gruppe..." />
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <main class="shell">
+    <section class="filter-card">
+      <div class="section-head">
+        <div>
+          <h2>Filtrer på én gruppe om gangen</h2>
+          <p>Trykk på `Alle`, `Master`, `Bachelor` eller `Kjeller` for å se bare det relevante opplegget.</p>
+        </div>
+      </div>
+      <div class="filter-row" id="group-filter-row"></div>
+    </section>
+
+    <section class="board calendar-anchor" id="board"></section>
+  </main>
+
+  <div class="drawer-backdrop" id="drawer-backdrop"></div>
+  <aside class="drawer" id="drawer" aria-hidden="true">
+    <div class="drawer-head">
+      <div class="drawer-actions">
+        <div class="drawer-title">
+          <h2 id="drawer-heading">Nytt arrangement</h2>
+          <p id="drawer-subtitle">Legg inn detaljer, ansvar og praktiske punkter.</p>
+        </div>
+        <button class="icon-btn" id="close-drawer" aria-label="Lukk detaljpanelet">✕</button>
+      </div>
+    </div>
+
+    <div class="drawer-body">
+      <div class="field-grid two">
+        <div class="field">
+          <label for="event-title">Arrangement</label>
+          <input id="event-title" type="text" placeholder="F.eks. Velkomst på campus" />
+        </div>
+        <div class="field">
+          <label for="event-responsible">Ansvarlig</label>
+          <input id="event-responsible" type="text" placeholder="Navn eller styre" />
+        </div>
+      </div>
+
+      <div class="field-grid three">
+        <div class="field">
+          <label for="event-day">Dag</label>
+          <select id="event-day"></select>
+        </div>
+        <div class="field">
+          <label for="event-slot">Kategori</label>
+          <select id="event-slot"></select>
+        </div>
+        <div class="field">
+          <label for="event-status">Status</label>
+          <select id="event-status">
+            <option value="planlegging">Under planlegging</option>
+            <option value="klart">Klart</option>
+            <option value="mangler">Trenger avklaringer</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field-grid two">
+        <div class="field">
+          <label for="event-start-time">Starttid</label>
+          <select id="event-start-time"></select>
+        </div>
+        <div class="field">
+          <label for="event-end-time">Sluttid</label>
+          <select id="event-end-time"></select>
+        </div>
+      </div>
+
+      <div class="field-grid two">
+        <div class="field">
+          <label for="event-location">Sted / lokasjon</label>
+          <input id="event-location" type="text" placeholder="F.eks. Pilestredet 35 / Kjeller" />
+        </div>
+        <div class="field">
+          <label for="event-map-link">Kartlenke</label>
+          <input id="event-map-link" type="url" placeholder="https://maps.google.com/..." />
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Hvem er med?</label>
+        <div class="check-grid" id="group-check-grid"></div>
+        <small>Velg ett eller flere styrer. Kombinasjonene vises automatisk på kortet.</small>
+      </div>
+
+      <div class="field">
+        <label for="event-summary">Kort beskrivelse</label>
+        <textarea id="event-summary" placeholder="Kort forklaring av opplegget og hvordan det skal gjennomføres."></textarea>
+      </div>
+
+      <div class="field-grid two">
+        <div class="field">
+          <label for="event-theme">Tema / vibe</label>
+          <input id="event-theme" type="text" placeholder="F.eks. rolig oppstart, sosial kveld, workshop" />
+        </div>
+        <div class="field">
+          <label for="event-capacity">Antall / kapasitet</label>
+          <input id="event-capacity" type="text" placeholder="F.eks. 40 studenter" />
+        </div>
+      </div>
+
+      <div class="field-grid two">
+        <div class="field">
+          <label for="event-communication">Kommunikasjonsplan</label>
+          <textarea id="event-communication" placeholder="Hva skal nye studenter få vite, og når?"></textarea>
+        </div>
+        <div class="field">
+          <label for="event-plan-b">Plan B</label>
+          <textarea id="event-plan-b" placeholder="Hva gjør dere hvis været svikter, noen er syke eller noe faller bort?"></textarea>
+        </div>
+      </div>
+
+      <section class="todo-section">
+        <div class="section-head">
+          <div>
+            <h3>To-do</h3>
+            <p>Følg fremdriften for hvert arrangement.</p>
+          </div>
+          <button class="ghost-btn" id="add-todo">+ Legg til punkt</button>
+        </div>
+        <div class="progress-wrap"><div class="progress-bar" id="todo-progress"></div></div>
+        <div class="todo-list" id="todo-list"></div>
+        <p class="todo-empty" id="todo-empty">Ingen to-do punkter ennå.</p>
+      </section>
+
+      <section class="info-panel">
+        <div class="section-head">
+          <div>
+            <h3>Vær og sted</h3>
+            <p>Hvis dere er på nett og skriver inn sted, prøver siden å hente enkel værmelding automatisk.</p>
+          </div>
+          <button class="ghost-btn" id="refresh-weather">Oppdater vær</button>
+        </div>
+        <div class="weather-box">
+          <div>
+            <div class="muted" id="weather-label">Ingen værdata ennå</div>
+            <strong id="weather-temp">--</strong>
+          </div>
+          <div class="muted" id="weather-desc">Legg inn et sted og lagre arrangementet.</div>
+        </div>
+      </section>
+    </div>
+
+    <div class="drawer-foot">
+      <div class="drawer-actions">
+        <div class="slot-actions">
+          <button class="ghost-btn danger" id="delete-event">Slett</button>
+        </div>
+        <div class="slot-actions">
+          <button class="ghost-btn" id="duplicate-event">Dupliser</button>
+          <button class="primary-btn" id="save-event">Lagre arrangement</button>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <script src="./supabase-config.js"></script>
+  <script type="module">
+    const STORAGE_KEY = "fadderplan-oslomet-v3";
+    const REMOTE_CONFIG = window.FADDERPLAN_SUPABASE_CONFIG || null;
+    const GROUPS = [
+      { id: "master", label: "Design Master", short: "DM", color: "#0a2d6e" },
+      { id: "bachelor", label: "Produktdesign Bachelor", short: "PB", color: "#e63328" },
+      { id: "kjeller", label: "Kjeller", short: "KJ", color: "#21895b" }
+    ];
+    const SLOT_TYPES = [
+      { id: "dag", label: "Dag" },
+      { id: "kveld", label: "Kveld" },
+      { id: "festival", label: "Festival" }
+    ];
+    const DAYS = [
+      { id: "2026-08-09", label: "Søndag 9. august", short: "Søn 9. aug" },
+      { id: "2026-08-10", label: "Mandag 10. august", short: "Man 10. aug" },
+      { id: "2026-08-11", label: "Tirsdag 11. august", short: "Tir 11. aug" },
+      { id: "2026-08-12", label: "Onsdag 12. august", short: "Ons 12. aug" },
+      { id: "2026-08-13", label: "Torsdag 13. august", short: "Tor 13. aug" },
+      { id: "2026-08-14", label: "Fredag 14. august", short: "Fre 14. aug" },
+      { id: "2026-08-15", label: "Lørdag 15. august", short: "Lør 15. aug" },
+      { id: "2026-08-16", label: "Søndag 16. august", short: "Søn 16. aug" },
+      { id: "2026-08-17", label: "Mandag 17. august", short: "Man 17. aug" },
+      { id: "2026-08-18", label: "Tirsdag 18. august", short: "Tir 18. aug" }
+    ];
+
+    const TIME_OPTIONS = buildTimeOptions();
+    let state = loadLocalState();
+    let drawerState = {
+      open: false,
+      mode: "create",
+      eventId: null,
+      draft: null
+    };
+    let supabaseClient = null;
+    let collaborationMode = "local";
+    let remoteSyncTimer = null;
+    let applyingRemoteState = false;
+    let lastRemoteSerialized = "";
+
+    const boardEl = document.getElementById("board");
+    const summaryGridEl = document.getElementById("summary-grid");
+    const groupFilterRowEl = document.getElementById("group-filter-row");
+    const jumpToDayEl = document.getElementById("jump-to-day");
+    const searchEventsEl = document.getElementById("search-events");
+    const importDataInputEl = document.getElementById("import-data-input");
+
+    const drawerEl = document.getElementById("drawer");
+    const drawerBackdropEl = document.getElementById("drawer-backdrop");
+    const drawerHeadingEl = document.getElementById("drawer-heading");
+    const drawerSubtitleEl = document.getElementById("drawer-subtitle");
+    const deleteEventBtn = document.getElementById("delete-event");
+    const duplicateEventBtn = document.getElementById("duplicate-event");
+
+    const formEls = {
+      title: document.getElementById("event-title"),
+      responsible: document.getElementById("event-responsible"),
+      dayId: document.getElementById("event-day"),
+      slotType: document.getElementById("event-slot"),
+      startTime: document.getElementById("event-start-time"),
+      endTime: document.getElementById("event-end-time"),
+      status: document.getElementById("event-status"),
+      location: document.getElementById("event-location"),
+      mapLink: document.getElementById("event-map-link"),
+      summary: document.getElementById("event-summary"),
+      theme: document.getElementById("event-theme"),
+      capacity: document.getElementById("event-capacity"),
+      communication: document.getElementById("event-communication"),
+      planB: document.getElementById("event-plan-b")
+    };
+
+    const groupCheckGridEl = document.getElementById("group-check-grid");
+    const todoListEl = document.getElementById("todo-list");
+    const todoEmptyEl = document.getElementById("todo-empty");
+    const todoProgressEl = document.getElementById("todo-progress");
+    const weatherLabelEl = document.getElementById("weather-label");
+    const weatherTempEl = document.getElementById("weather-temp");
+    const weatherDescEl = document.getElementById("weather-desc");
+    const syncStatusTitleEl = document.getElementById("sync-status-title");
+    const syncStatusTextEl = document.getElementById("sync-status-text");
+
+    init();
+
+    function init() {
+      buildStaticControls();
+      attachGlobalEvents();
+      render();
+      initializeCollaboration();
+    }
+
+    function buildStaticControls() {
+      const allBtn = document.createElement("button");
+      allBtn.className = "chip-btn" + (state.filters.group === "all" ? " active" : "");
+      allBtn.dataset.groupFilter = "all";
+      allBtn.textContent = "Alle";
+      groupFilterRowEl.appendChild(allBtn);
+
+      GROUPS.forEach((group) => {
+        const filterBtn = document.createElement("button");
+        filterBtn.className = "chip-btn" + (state.filters.group === group.id ? " active" : "");
+        filterBtn.dataset.groupFilter = group.id;
+        filterBtn.textContent = group.label;
+        groupFilterRowEl.appendChild(filterBtn);
+
+        const checkTile = document.createElement("label");
+        checkTile.className = "check-tile";
+        checkTile.innerHTML = `
+          <input type="checkbox" value="${group.id}" />
+          <div>
+            <strong>${group.label}</strong>
+            <p class="muted" style="margin-top:4px;">Vises som ${group.short} på kort og i filter.</p>
+          </div>
+        `;
+        groupCheckGridEl.appendChild(checkTile);
+      });
+
+      DAYS.forEach((day) => {
+        const option = document.createElement("option");
+        option.value = day.id;
+        option.textContent = day.label;
+        jumpToDayEl.appendChild(option);
+
+        const dayOption = option.cloneNode(true);
+        formEls.dayId.appendChild(dayOption);
+      });
+
+      SLOT_TYPES.forEach((slot) => {
+        const option = document.createElement("option");
+        option.value = slot.id;
+        option.textContent = slot.label;
+        formEls.slotType.appendChild(option);
+      });
+
+      TIME_OPTIONS.forEach((time) => {
+        const startOption = document.createElement("option");
+        startOption.value = time;
+        startOption.textContent = time;
+        formEls.startTime.appendChild(startOption);
+
+        const endOption = startOption.cloneNode(true);
+        formEls.endTime.appendChild(endOption);
+      });
+    }
+
+    function attachGlobalEvents() {
+      document.getElementById("add-first-event").addEventListener("click", () => {
+        openDrawerForCreate({
+          dayId: DAYS[0].id,
+          slotType: "dag"
+        });
+      });
+      document.getElementById("jump-to-calendar").addEventListener("click", () => {
+        boardEl.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+      document.getElementById("export-data").addEventListener("click", exportState);
+      document.getElementById("import-data-btn").addEventListener("click", () => importDataInputEl.click());
+      importDataInputEl.addEventListener("change", importState);
+
+      jumpToDayEl.addEventListener("change", () => {
+        const target = document.getElementById(`day-${jumpToDayEl.value}`);
+        if (target) {
+          target.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      });
+
+      searchEventsEl.addEventListener("input", (event) => {
+        state.filters.search = event.target.value.trim().toLowerCase();
+        persistState();
+        render();
+      });
+
+      groupFilterRowEl.addEventListener("click", (event) => {
+        const button = event.target.closest("[data-group-filter]");
+        if (!button) return;
+        const groupId = button.dataset.groupFilter;
+        toggleGroupFilter(groupId);
+      });
+
+      document.getElementById("close-drawer").addEventListener("click", closeDrawer);
+      drawerBackdropEl.addEventListener("click", closeDrawer);
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && drawerState.open) {
+          closeDrawer();
+        }
+      });
+
+      Object.values(formEls).forEach((el) => {
+        el.addEventListener("input", syncDraftFromForm);
+        el.addEventListener("change", syncDraftFromForm);
+      });
+
+      groupCheckGridEl.addEventListener("change", syncDraftFromForm);
+      document.getElementById("add-todo").addEventListener("click", () => {
+        ensureDraft();
+        drawerState.draft.todos.push({ id: createId(), text: "", done: false });
+        renderDrawerLists();
+      });
+      document.getElementById("save-event").addEventListener("click", saveDrawerEvent);
+      deleteEventBtn.addEventListener("click", deleteCurrentEvent);
+      duplicateEventBtn.addEventListener("click", duplicateCurrentEvent);
+      document.getElementById("refresh-weather").addEventListener("click", () => {
+        ensureDraft();
+        fetchWeatherPreview(drawerState.draft);
+      });
+    }
+
+    function render() {
+      renderSummary();
+      renderFilters();
+      renderBoard();
+      searchEventsEl.value = state.filters.search || "";
+    }
+
+    function renderSummary() {
+      const events = state.events;
+      const visibleEvents = getVisibleEvents();
+      const readyCount = events.filter((event) => event.status === "klart").length;
+      const summary = [
+        { value: `${events.length}`, label: "Totale arrangementer" },
+        { value: `${visibleEvents.length}`, label: "Synlige i filteret" },
+        { value: `${readyCount}`, label: "Markert som klare" },
+        { value: `${DAYS.length}`, label: "Dager i planen" }
+      ];
+
+      summaryGridEl.innerHTML = "";
+      summary.forEach((item) => {
+        const stat = document.createElement("article");
+        stat.className = "stat";
+        stat.innerHTML = `<strong>${item.value}</strong><span>${item.label}</span>`;
+        summaryGridEl.appendChild(stat);
+      });
+    }
+
+    function renderFilters() {
+      groupFilterRowEl.querySelectorAll("[data-group-filter]").forEach((button) => {
+        button.classList.toggle("active", state.filters.group === button.dataset.groupFilter);
+      });
+    }
+
+    function renderBoard() {
+      boardEl.innerHTML = "";
+      DAYS.forEach((day) => {
+        const dayEvents = getVisibleEvents().filter((event) => event.dayId === day.id);
+        const article = document.createElement("article");
+        article.className = "day-card";
+        article.id = `day-${day.id}`;
+        article.innerHTML = `
+          <div class="day-head">
+            <div>
+              <h2>${day.label}</h2>
+              <p>${dayEvents.length} arrangementer matcher dagens filter.</p>
+            </div>
+            <div class="slot-actions">
+              <button class="ghost-btn" data-add-day="${day.id}" data-add-slot="dag">+ Dag</button>
+              <button class="ghost-btn" data-add-day="${day.id}" data-add-slot="kveld">+ Kveld</button>
+              <button class="ghost-btn" data-add-day="${day.id}" data-add-slot="festival">+ Festival</button>
+            </div>
+          </div>
+          <div class="day-grid"></div>
+        `;
+        const grid = article.querySelector(".day-grid");
+
+        SLOT_TYPES.forEach((slot) => {
+          const slotEvents = dayEvents.filter((event) => event.slotType === slot.id);
+          const slotEl = document.createElement("section");
+          slotEl.className = "slot";
+          slotEl.dataset.slotType = slot.id;
+          slotEl.innerHTML = `
+            <div class="slot-header">
+              <div>
+                <span class="slot-badge">${slot.label}</span>
+                <h3>${slot.label}program</h3>
+                <p class="muted">${slotEvents.length} arrangementer</p>
+              </div>
+              <button class="icon-btn" data-add-day="${day.id}" data-add-slot="${slot.id}" aria-label="Legg til ${slot.label.toLowerCase()}">+</button>
+            </div>
+            <div class="slot-list"></div>
+          `;
+          const list = slotEl.querySelector(".slot-list");
+
+          if (!slotEvents.length) {
+            const empty = document.createElement("div");
+            empty.className = "empty-card";
+            empty.innerHTML = `
+              <strong>Ingen arrangementer ennå</strong>
+              <span>Trykk på plusstegnet for å legge inn et nytt opplegg i ${slot.label.toLowerCase()}-slotten.</span>
+            `;
+            list.appendChild(empty);
+          } else {
+            slotEvents
+              .sort(sortEvents)
+              .forEach((event) => {
+                list.appendChild(renderEventCard(event));
+              });
+          }
+
+          grid.appendChild(slotEl);
+        });
+
+        boardEl.appendChild(article);
+      });
+
+      boardEl.querySelectorAll("[data-add-day]").forEach((button) => {
+        button.addEventListener("click", () => {
+          openDrawerForCreate({
+            dayId: button.dataset.addDay,
+            slotType: button.dataset.addSlot
+          });
+        });
+      });
+    }
+
+    function renderEventCard(event) {
+      const card = document.createElement("article");
+      card.className = "event-card";
+      card.style.setProperty("--accent", getGroupAccent(event.groups));
+      const todoCount = event.todos.length;
+      const todoDone = event.todos.filter((item) => item.done).length;
+      const groupChips = event.groups
+        .map((groupId) => {
+          const group = GROUPS.find((item) => item.id === groupId);
+          return `<span class="group-pill" style="color:${group.color};"><span class="group-dot"></span>${group.short}</span>`;
+        })
+        .join("");
+
+      card.innerHTML = `
+        <h4>${escapeHtml(event.title || "Uten navn")}</h4>
+        <p>${escapeHtml(event.summary || "Ingen beskrivelse ennå.")}</p>
+        <div class="card-meta">
+          <span>${formatTimeRange(event.startTime, event.endTime)}</span>
+          <span>•</span>
+          <span>${escapeHtml(event.location || "Sted ikke satt")}</span>
+        </div>
+        <div class="card-meta">
+          <span>${escapeHtml(event.responsible || "Ansvarlig mangler")}</span>
+          <span>•</span>
+          <span>${getStatusLabel(event.status)}</span>
+        </div>
+        <div class="card-chips">${groupChips}</div>
+        <div class="action-row">
+          <span class="muted">${todoDone}/${todoCount} to-do ferdig</span>
+          <button class="mini-link" type="button">Åpne detaljer</button>
+        </div>
+      `;
+      card.addEventListener("click", () => openDrawerForEdit(event.id));
+      return card;
+    }
+
+    function openDrawerForCreate({ dayId, slotType }) {
+      drawerState = {
+        open: true,
+        mode: "create",
+        eventId: null,
+        draft: createEmptyEvent({ dayId, slotType })
+      };
+      renderDrawer();
+    }
+
+    function openDrawerForEdit(eventId) {
+      const event = state.events.find((item) => item.id === eventId);
+      if (!event) return;
+      drawerState = {
+        open: true,
+        mode: "edit",
+        eventId,
+        draft: cloneData(event)
+      };
+      renderDrawer();
+    }
+
+    function closeDrawer() {
+      drawerState.open = false;
+      drawerState.eventId = null;
+      drawerState.draft = null;
+      drawerEl.classList.remove("open");
+      drawerBackdropEl.classList.remove("open");
+      drawerEl.setAttribute("aria-hidden", "true");
+      document.body.classList.remove("drawer-open");
+    }
+
+    function renderDrawer() {
+      if (!drawerState.open || !drawerState.draft) {
+        closeDrawer();
+        return;
+      }
+
+      drawerHeadingEl.textContent = drawerState.mode === "create" ? "Nytt arrangement" : "Rediger arrangement";
+      drawerSubtitleEl.textContent = `${getDayLabel(drawerState.draft.dayId)} • ${getSlotLabel(drawerState.draft.slotType)}`;
+      deleteEventBtn.style.visibility = drawerState.mode === "edit" ? "visible" : "hidden";
+      duplicateEventBtn.style.visibility = drawerState.mode === "edit" ? "visible" : "hidden";
+
+      formEls.title.value = drawerState.draft.title;
+      formEls.responsible.value = drawerState.draft.responsible;
+      formEls.dayId.value = drawerState.draft.dayId;
+      formEls.slotType.value = drawerState.draft.slotType;
+      formEls.startTime.value = drawerState.draft.startTime;
+      formEls.endTime.value = drawerState.draft.endTime;
+      formEls.status.value = drawerState.draft.status;
+      formEls.location.value = drawerState.draft.location;
+      formEls.mapLink.value = drawerState.draft.mapLink;
+      formEls.summary.value = drawerState.draft.summary;
+      formEls.theme.value = drawerState.draft.theme;
+      formEls.capacity.value = drawerState.draft.capacity;
+      formEls.communication.value = drawerState.draft.communication;
+      formEls.planB.value = drawerState.draft.planB;
+
+      groupCheckGridEl.querySelectorAll("input[type='checkbox']").forEach((checkbox) => {
+        checkbox.checked = drawerState.draft.groups.includes(checkbox.value);
+      });
+
+      renderDrawerLists();
+      updateWeatherBox(drawerState.draft.weather);
+
+      drawerEl.classList.add("open");
+      drawerBackdropEl.classList.add("open");
+      drawerEl.setAttribute("aria-hidden", "false");
+      document.body.classList.add("drawer-open");
+    }
+
+    function renderDrawerLists() {
+      ensureDraft();
+      renderTodoList();
+    }
+
+    function renderTodoList() {
+      todoListEl.innerHTML = "";
+      const todos = drawerState.draft.todos;
+      todoEmptyEl.style.display = todos.length ? "none" : "block";
+
+      todos.forEach((todo) => {
+        const row = document.createElement("div");
+        row.className = "todo-row";
+        row.innerHTML = `
+          <input class="todo-check" type="checkbox" ${todo.done ? "checked" : ""} />
+          <input type="text" placeholder="F.eks. Booke rom" value="${escapeAttribute(todo.text)}" />
+          <button class="icon-btn" type="button" aria-label="Slett punkt">✕</button>
+        `;
+        const [checkEl, inputEl, deleteEl] = row.children;
+        checkEl.addEventListener("change", () => {
+          todo.done = checkEl.checked;
+          renderTodoList();
+        });
+        inputEl.addEventListener("input", () => {
+          todo.text = inputEl.value;
+        });
+        deleteEl.addEventListener("click", () => {
+          drawerState.draft.todos = drawerState.draft.todos.filter((item) => item.id !== todo.id);
+          renderTodoList();
+        });
+        todoListEl.appendChild(row);
+      });
+
+      const doneCount = todos.filter((todo) => todo.done).length;
+      const progress = todos.length ? Math.round((doneCount / todos.length) * 100) : 0;
+      todoProgressEl.style.width = `${progress}%`;
+    }
+
+    function syncDraftFromForm() {
+      ensureDraft();
+      drawerState.draft.title = formEls.title.value.trim();
+      drawerState.draft.responsible = formEls.responsible.value.trim();
+      drawerState.draft.dayId = formEls.dayId.value;
+      drawerState.draft.slotType = formEls.slotType.value;
+      drawerState.draft.startTime = formEls.startTime.value;
+      drawerState.draft.endTime = formEls.endTime.value;
+      drawerState.draft.status = formEls.status.value;
+      drawerState.draft.location = formEls.location.value.trim();
+      drawerState.draft.mapLink = formEls.mapLink.value.trim();
+      drawerState.draft.summary = formEls.summary.value.trim();
+      drawerState.draft.theme = formEls.theme.value.trim();
+      drawerState.draft.capacity = formEls.capacity.value.trim();
+      drawerState.draft.communication = formEls.communication.value.trim();
+      drawerState.draft.planB = formEls.planB.value.trim();
+      drawerState.draft.groups = Array.from(groupCheckGridEl.querySelectorAll("input:checked")).map((checkbox) => checkbox.value);
+      if (!drawerState.draft.groups.length) {
+        drawerState.draft.groups = ["master"];
+        groupCheckGridEl.querySelector("input[value='master']").checked = true;
+      }
+      drawerSubtitleEl.textContent = `${getDayLabel(drawerState.draft.dayId)} • ${getSlotLabel(drawerState.draft.slotType)}`;
+    }
+
+    function saveDrawerEvent() {
+      syncDraftFromForm();
+      const event = normalizeEvent(drawerState.draft);
+      if (!event.title) {
+        alert("Skriv inn et navn på arrangementet før du lagrer.");
+        formEls.title.focus();
+        return;
+      }
+
+      if (compareTime(event.startTime, event.endTime) > 0) {
+        alert("Sluttid må være etter starttid.");
+        formEls.endTime.focus();
+        return;
+      }
+
+      const existsIndex = state.events.findIndex((item) => item.id === event.id);
+      if (existsIndex >= 0) {
+        state.events[existsIndex] = event;
+      } else {
+        state.events.push(event);
+      }
+
+      persistState();
+      render();
+      closeDrawer();
+      fetchWeatherForEvent(event.id, event.location);
+    }
+
+    function deleteCurrentEvent() {
+      if (drawerState.mode !== "edit" || !drawerState.eventId) return;
+      const shouldDelete = window.confirm("Vil du slette dette arrangementet?");
+      if (!shouldDelete) return;
+      state.events = state.events.filter((event) => event.id !== drawerState.eventId);
+      persistState();
+      render();
+      closeDrawer();
+    }
+
+    function duplicateCurrentEvent() {
+      ensureDraft();
+      const duplicate = normalizeEvent({
+        ...cloneData(drawerState.draft),
+        id: createId(),
+        title: `${drawerState.draft.title || "Nytt arrangement"} (kopi)`
+      });
+      state.events.push(duplicate);
+      persistState();
+      render();
+      openDrawerForEdit(duplicate.id);
+      fetchWeatherForEvent(duplicate.id, duplicate.location);
+    }
+
+    function toggleGroupFilter(groupId) {
+      state.filters.group = groupId;
+      persistState();
+      render();
+    }
+
+    function getVisibleEvents() {
+      return state.events.filter((event) => matchesFilters(event));
+    }
+
+    function matchesFilters(event) {
+      const activeGroup = state.filters.group;
+      const search = state.filters.search;
+      const matchesGroup = activeGroup === "all" || event.groups.includes(activeGroup);
+      if (!matchesGroup) return false;
+      if (!search) return true;
+
+      const haystack = [
+        event.title,
+        event.summary,
+        event.location,
+        event.responsible,
+        event.theme,
+        formatGroupLabel(event.groups)
+      ]
+        .join(" ")
+        .toLowerCase();
+      return haystack.includes(search);
+    }
+
+    function loadLocalState() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
+        if (!saved) return createInitialState();
+        return normalizeState({
+          events: Array.isArray(saved.events) ? saved.events.map(normalizeEvent) : [],
+          filters: {
+            group: typeof saved.filters?.group === "string"
+              ? saved.filters.group
+              : Array.isArray(saved.filters?.groups) && saved.filters.groups.length
+                ? saved.filters.groups[0]
+                : "all",
+            search: typeof saved.filters?.search === "string" ? saved.filters.search : ""
+          }
+        });
+      } catch (error) {
+        console.warn("Kunne ikke lese lagret data", error);
+        return createInitialState();
+      }
+    }
+
+    function persistState() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      scheduleRemoteSync();
+    }
+
+    function exportState() {
+      const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "fadderplan-data.json";
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    function importState(event) {
+      const file = event.target.files?.[0];
+      if (!file) return;
+      file.text().then((text) => {
+        const parsed = JSON.parse(text);
+        state = normalizeState({
+          events: Array.isArray(parsed.events) ? parsed.events.map(normalizeEvent) : [],
+          filters: {
+            group: typeof parsed.filters?.group === "string"
+              ? parsed.filters.group
+              : Array.isArray(parsed.filters?.groups) && parsed.filters.groups.length
+                ? parsed.filters.groups[0]
+                : "all",
+            search: typeof parsed.filters?.search === "string" ? parsed.filters.search : ""
+          }
+        });
+        persistState();
+        render();
+        importDataInputEl.value = "";
+      }).catch(() => {
+        alert("Kunne ikke importere JSON-filen.");
+        importDataInputEl.value = "";
+      });
+    }
+
+    async function initializeCollaboration() {
+      if (!REMOTE_CONFIG?.url || !REMOTE_CONFIG?.anonKey || !REMOTE_CONFIG?.boardId) {
+        updateSyncStatus("Lokal modus", "Legg inn Supabase-oppsett i supabase-config.js for delt redigering i sanntid.");
+        return;
+      }
+
+      try {
+        updateSyncStatus("Kobler til", "Prøver å koble siden til delt Supabase-board.");
+        const { createClient } = await import("https://esm.sh/@supabase/supabase-js@2");
+        supabaseClient = createClient(REMOTE_CONFIG.url, REMOTE_CONFIG.anonKey, {
+          auth: { persistSession: false }
+        });
+        collaborationMode = "remote";
+        await hydrateRemoteState();
+        subscribeToRemoteChanges();
+        updateSyncStatus("Delt live-modus", "Endringer synkroniseres mellom alle som er inne på samme side.");
+      } catch (error) {
+        console.warn("Kunne ikke starte Supabase", error);
+        collaborationMode = "local";
+        updateSyncStatus("Lokal modus", "Supabase-oppsettet feilet, så siden kjører lokalt akkurat nå.");
+      }
+    }
+
+    async function hydrateRemoteState() {
+      const { data, error } = await supabaseClient
+        .from("boards")
+        .select("id, data, updated_at")
+        .eq("id", REMOTE_CONFIG.boardId)
+        .maybeSingle();
+
+      if (error) {
+        throw error;
+      }
+
+      if (!data) {
+        await upsertRemoteState();
+        return;
+      }
+
+      applyIncomingRemoteState(data.data);
+    }
+
+    function subscribeToRemoteChanges() {
+      supabaseClient
+        .channel(`board-${REMOTE_CONFIG.boardId}`)
+        .on(
+          "postgres_changes",
+          {
+            event: "*",
+            schema: "public",
+            table: "boards",
+            filter: `id=eq.${REMOTE_CONFIG.boardId}`
+          },
+          (payload) => {
+            if (!payload.new?.data) return;
+            applyIncomingRemoteState(payload.new.data);
+          }
+        )
+        .subscribe();
+    }
+
+    function applyIncomingRemoteState(nextState) {
+      const normalized = normalizeState(nextState);
+      const serialized = JSON.stringify(normalized);
+      if (serialized === lastRemoteSerialized) {
+        return;
+      }
+      applyingRemoteState = true;
+      state = normalized;
+      lastRemoteSerialized = serialized;
+      localStorage.setItem(STORAGE_KEY, serialized);
+      render();
+      applyingRemoteState = false;
+    }
+
+    function scheduleRemoteSync() {
+      if (collaborationMode !== "remote" || !supabaseClient || applyingRemoteState) {
+        return;
+      }
+      window.clearTimeout(remoteSyncTimer);
+      remoteSyncTimer = window.setTimeout(() => {
+        upsertRemoteState();
+      }, 250);
+    }
+
+    async function upsertRemoteState() {
+      if (collaborationMode !== "remote" || !supabaseClient) {
+        return;
+      }
+
+      const serialized = JSON.stringify(state);
+      lastRemoteSerialized = serialized;
+      const { error } = await supabaseClient.from("boards").upsert({
+        id: REMOTE_CONFIG.boardId,
+        name: REMOTE_CONFIG.boardName || "Fadderplan OsloMet",
+        data: state,
+        updated_at: new Date().toISOString()
+      });
+
+      if (error) {
+        console.warn("Kunne ikke lagre til Supabase", error);
+        updateSyncStatus("Delt modus feilet", "Kunne ikke lagre siste endring til Supabase. Siden fortsetter lokalt.");
+      }
+    }
+
+    function updateSyncStatus(title, text) {
+      syncStatusTitleEl.textContent = title;
+      syncStatusTextEl.textContent = text;
+    }
+
+    async function fetchWeatherForEvent(eventId, location) {
+      if (!location) return;
+      try {
+        const weather = await getWeather(location);
+        if (!weather) return;
+        const eventIndex = state.events.findIndex((event) => event.id === eventId);
+        if (eventIndex === -1) return;
+        state.events[eventIndex].weather = weather;
+        persistState();
+        if (drawerState.open && drawerState.eventId === eventId) {
+          drawerState.draft.weather = weather;
+          updateWeatherBox(weather);
+        }
+        render();
+      } catch (error) {
+        console.warn("Værmelding utilgjengelig", error);
+      }
+    }
+
+    async function fetchWeatherPreview(draft) {
+      if (!draft.location) {
+        alert("Legg inn et sted først.");
+        return;
+      }
+      try {
+        const weather = await getWeather(draft.location);
+        if (!weather) {
+          updateWeatherBox(null);
+          return;
+        }
+        draft.weather = weather;
+        updateWeatherBox(weather);
+      } catch (error) {
+        updateWeatherBox(null);
+      }
+    }
+
+    async function getWeather(location) {
+      if (!navigator.onLine) return null;
+      const geoUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(location)}&count=1&language=no&format=json`;
+      const geoRes = await fetch(geoUrl);
+      if (!geoRes.ok) return null;
+      const geoData = await geoRes.json();
+      const first = geoData?.results?.[0];
+      if (!first) return null;
+
+      const forecastUrl = `https://api.open-meteo.com/v1/forecast?latitude=${first.latitude}&longitude=${first.longitude}&current=temperature_2m,weather_code,wind_speed_10m&timezone=auto`;
+      const forecastRes = await fetch(forecastUrl);
+      if (!forecastRes.ok) return null;
+      const forecast = await forecastRes.json();
+      return {
+        place: `${first.name}${first.admin1 ? ", " + first.admin1 : ""}`,
+        temperature: `${Math.round(forecast.current.temperature_2m)}°C`,
+        description: weatherCodeToText(forecast.current.weather_code),
+        wind: `${Math.round(forecast.current.wind_speed_10m)} m/s`
+      };
+    }
+
+    function updateWeatherBox(weather) {
+      if (!weather) {
+        weatherLabelEl.textContent = "Ingen værdata ennå";
+        weatherTempEl.textContent = "--";
+        weatherDescEl.textContent = "Legg inn et sted og lagre arrangementet.";
+        return;
+      }
+      weatherLabelEl.textContent = weather.place;
+      weatherTempEl.textContent = weather.temperature;
+      weatherDescEl.textContent = `${weather.description} • Vind ${weather.wind}`;
+    }
+
+    function weatherCodeToText(code) {
+      const map = {
+        0: "Klart",
+        1: "For det meste klart",
+        2: "Delvis skyet",
+        3: "Skyet",
+        45: "Tåke",
+        48: "Iset tåke",
+        51: "Lett yr",
+        53: "Yr",
+        55: "Tett yr",
+        61: "Lett regn",
+        63: "Regn",
+        65: "Kraftig regn",
+        71: "Lett snø",
+        73: "Snø",
+        75: "Kraftig snø",
+        80: "Byger",
+        95: "Tordenvær"
+      };
+      return map[code] || "Værdata tilgjengelig";
+    }
+
+    function createInitialState() {
+      return {
+        events: [],
+        filters: {
+          group: "all",
+          search: ""
+        }
+      };
+    }
+
+    function normalizeState(input) {
+      return {
+        events: Array.isArray(input?.events) ? input.events.map(normalizeEvent) : [],
+        filters: {
+          group: typeof input?.filters?.group === "string" ? input.filters.group : "all",
+          search: typeof input?.filters?.search === "string" ? input.filters.search : ""
+        }
+      };
+    }
+
+    function createEmptyEvent(overrides = {}) {
+      return normalizeEvent({
+        id: createId(),
+        dayId: overrides.dayId || DAYS[0].id,
+        slotType: overrides.slotType || "dag",
+        title: "",
+        responsible: "",
+        startTime: "10:00",
+        endTime: "12:00",
+        status: "planlegging",
+        location: "",
+        mapLink: "",
+        summary: "",
+        theme: "",
+        capacity: "",
+        communication: "",
+        planB: "",
+        groups: ["master"],
+        todos: [],
+        weather: null
+      });
+    }
+
+    function normalizeEvent(event) {
+      const groups = Array.isArray(event.groups) && event.groups.length ? unique(event.groups.filter(Boolean)) : ["master"];
+      return {
+        id: event.id || createId(),
+        dayId: DAYS.some((day) => day.id === event.dayId) ? event.dayId : DAYS[0].id,
+        slotType: SLOT_TYPES.some((slot) => slot.id === event.slotType) ? event.slotType : "dag",
+        title: typeof event.title === "string" ? event.title : "",
+        responsible: typeof event.responsible === "string" ? event.responsible : "",
+        startTime: TIME_OPTIONS.includes(event.startTime) ? event.startTime : "10:00",
+        endTime: TIME_OPTIONS.includes(event.endTime) ? event.endTime : "12:00",
+        status: ["planlegging", "klart", "mangler"].includes(event.status) ? event.status : "planlegging",
+        location: typeof event.location === "string" ? event.location : "",
+        mapLink: typeof event.mapLink === "string" ? event.mapLink : "",
+        summary: typeof event.summary === "string" ? event.summary : "",
+        theme: typeof event.theme === "string" ? event.theme : "",
+        capacity: typeof event.capacity === "string" ? event.capacity : "",
+        communication: typeof event.communication === "string" ? event.communication : "",
+        planB: typeof event.planB === "string" ? event.planB : "",
+        groups,
+        todos: Array.isArray(event.todos)
+          ? event.todos.map((todo) => ({
+              id: todo.id || createId(),
+              text: typeof todo.text === "string" ? todo.text : "",
+              done: Boolean(todo.done)
+            }))
+          : [],
+        weather: event.weather || null
+      };
+    }
+
+    function buildTimeOptions() {
+      const times = [];
+      for (let hour = 7; hour <= 23; hour += 1) {
+        ["00", "30"].forEach((minutes) => {
+          times.push(`${String(hour).padStart(2, "0")}:${minutes}`);
+        });
+      }
+      return times;
+    }
+
+    function compareTime(a, b) {
+      return TIME_OPTIONS.indexOf(a) - TIME_OPTIONS.indexOf(b);
+    }
+
+    function formatTimeRange(start, end) {
+      return start && end ? `${start}–${end}` : "Tid ikke satt";
+    }
+
+    function createId() {
+      return Math.random().toString(36).slice(2, 10);
+    }
+
+    function cloneData(value) {
+      if (typeof structuredClone === "function") {
+        return structuredClone(value);
+      }
+      return JSON.parse(JSON.stringify(value));
+    }
+
+    function unique(list) {
+      return Array.from(new Set(list));
+    }
+
+    function sortEvents(a, b) {
+      if (a.startTime !== b.startTime) return compareTime(a.startTime, b.startTime);
+      return a.title.localeCompare(b.title, "no");
+    }
+
+    function getSlotLabel(slotType) {
+      return SLOT_TYPES.find((slot) => slot.id === slotType)?.label || "Dag";
+    }
+
+    function getDayLabel(dayId) {
+      return DAYS.find((day) => day.id === dayId)?.label || "";
+    }
+
+    function getStatusLabel(status) {
+      if (status === "klart") return "Klart";
+      if (status === "mangler") return "Trenger avklaringer";
+      return "Under planlegging";
+    }
+
+    function formatGroupLabel(groupIds) {
+      const labels = groupIds.map((groupId) => GROUPS.find((group) => group.id === groupId)?.label).filter(Boolean);
+      return labels.join(" + ");
+    }
+
+    function getGroupAccent(groupIds) {
+      const key = unique(groupIds).sort().join("-");
+      const colorMap = {
+        bachelor: "#e63328",
+        kjeller: "#21895b",
+        master: "#0a2d6e",
+        "bachelor-kjeller": "#237a8e",
+        "bachelor-master": "#7d4ac7",
+        "kjeller-master": "#2a7b68",
+        "bachelor-kjeller-master": "#c89a1e"
+      };
+      return colorMap[key] || "#0a2d6e";
+    }
+
+    function ensureDraft() {
+      if (!drawerState.draft) {
+        drawerState.draft = createEmptyEvent();
+      }
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#39;");
+    }
+
+    function escapeAttribute(value) {
+      return escapeHtml(value || "");
+    }
+  </script>
+</body>
+</html>
